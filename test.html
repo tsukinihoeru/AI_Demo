@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Case Generation Model Architectures</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Subtle Tech -->
+    <!-- Application Structure Plan: The application is designed as a single-page scrolling experience with a sticky top navigation bar for quick access to different sections. This structure facilitates easy comparison between the three proposed architectures by allowing users to quickly jump between them. The flow is: 1. Introduction, 2. Deep-dive into each of the three Architectures (with concepts, pros/cons, and a visual workflow diagram), 3. An interactive Comparison Summary using a radar chart for a quick visual synthesis of key trade-offs, and 4. A final section on implementation details. This structure was chosen to guide the user from a high-level overview to detailed analysis and finally to a comparative summary, which is the most logical flow for evaluating complex options. -->
+    <!-- Visualization & Content Choices: 
+        - [Report Info: 3 distinct architectures] -> [Goal: Compare] -> [Viz: Thematic sections with parallel structure] -> [Interaction: Top navigation tabs] -> [Justification: Allows users to easily switch between and compare complex ideas.] -> [Library/Method: HTML/Tailwind/JS].
+        - [Report Info: Workflow for each architecture] -> [Goal: Organize/Inform] -> [Viz: HTML/CSS diagrams] -> [Interaction: Hover highlights on components] -> [Justification: Visually simplifies complex processes described in the text, making them easier to grasp than text alone. NO SVG/Mermaid used.] -> [Library/Method: HTML/Tailwind].
+        - [Report Info: Pros and Cons for each architecture] -> [Goal: Compare] -> [Viz: Side-by-side lists] -> [Interaction: Static] -> [Justification: Clear, scannable format for direct comparison.] -> [Library/Method: HTML/Tailwind].
+        - [Report Info: Implicit comparative metrics like implementation difficulty, output quality, maintenance overhead] -> [Goal: Compare] -> [Viz: Radar Chart] -> [Interaction: Hover tooltips to see scores] -> [Justification: Provides an immediate, high-impact visual summary of the key trade-offs, aiding in decision-making.] -> [Library/Method: Chart.js].
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active {
+            color: #0ea5e9; /* sky-500 */
+            border-bottom-color: #0ea5e9;
+        }
+        .diagram-box {
+            border: 1px solid #cbd5e1; /* slate-300 */
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .diagram-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .diagram-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b; /* slate-500 */
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .pro-con-list {
+            padding-left: 1.5rem;
+        }
+        .pro-con-list li::marker {
+            font-weight: 700;
+        }
+        .pro-list li::marker {
+            content: '✓ ';
+            color: #22c55e; /* green-500 */
+        }
+        .con-list li::marker {
+            content: '✗ ';
+            color: #ef4444; /* red-500 */
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-slate-900">Test Case Generation Architectures</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-sky-500">Introduction</a>
+                        <a href="#idea1" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-sky-500">Idea 1: Tool-Based</a>
+                        <a href="#idea2" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-sky-500">Idea 2: Fine-Tuned</a>
+                        <a href="#idea3" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-sky-500">Idea 3: Multi-Agent</a>
+                        <a href="#comparison" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-sky-500">Comparison</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <!-- Introduction Section -->
+        <section id="introduction" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold tracking-tight text-slate-900 mb-4">Exploring AI Architectures for Test Case Generation</h2>
+            <p class="text-lg text-slate-600 max-w-3xl">
+                This interactive report explores different Artificial Intelligence (AI) model architectures designed to automate and enhance the generation of comprehensive and relevant test cases for cybersecurity products. The primary goal is to efficiently generate high-quality test cases for product licensing and activation processes. Each approach offers a unique set of trade-offs in terms of implementation complexity, output quality, and maintenance overhead. Navigate through the sections to understand each model and see how they compare.
+            </p>
+            <div class="mt-8 p-6 bg-sky-50 border border-sky-200 rounded-lg">
+                <h3 class="text-lg font-semibold text-sky-800 mb-2">Available Resources for Models</h3>
+                <p class="text-sky-700">All architectures are designed to leverage a common set of resources:</p>
+                <ul class="mt-2 list-disc list-inside text-sky-700 space-y-1">
+                    <li><span class="font-semibold">Feature Catalog:</span> Detailed descriptions of product features.</li>
+                    <li><span class="font-semibold">SKUs (Stock Keeping Units):</span> Specific product identifiers and configurations.</li>
+                    <li><span class="font-semibold">Sample Test Cases:</span> A collection of existing test cases to provide examples and structure.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Idea 1 Section -->
+        <section id="idea1" class="mb-16 scroll-mt-24">
+            <div class="mb-8">
+                <span class="text-sm font-bold uppercase text-sky-600">Architecture 1</span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Single Agent (Tool-Based)</h2>
+            </div>
+            
+            <p class="text-lg text-slate-600 max-w-3xl mb-8">
+                This approach utilizes a single AI agent whose behavior is primarily governed by a system prompt. Instead of being directly fine-tuned on all data, the agent interacts with various external tools to query and access information on demand, acting as a smart orchestrator.
+            </p>
+
+            <div class="grid md:grid-cols-5 gap-8">
+                <div class="md:col-span-3">
+                    <h3 class="text-xl font-semibold text-slate-900 mb-4">Workflow Diagram</h3>
+                    <div class="bg-slate-100 p-6 rounded-lg border border-slate-200 space-y-4">
+                        <div class="diagram-box">User Prompt</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box font-semibold text-sky-700 bg-sky-50 border-sky-200">AI Agent (System Prompt-Driven)</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div class="diagram-box">Context Retriever (RAG)</div>
+                            <div class="diagram-box">Test Case Retriever (RAG)</div>
+                            <div class="diagram-box">Validator</div>
+                        </div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box">Validated Test Cases</div>
+                    </div>
+                </div>
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold text-slate-900 mb-4">Analysis</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-green-700">Upsides</h4>
+                            <ul class="pro-con-list pro-list text-slate-600 mt-1 space-y-1">
+                                <li>Relatively easy to implement; effort is focused on tool optimization.</li>
+                                <li>Highly adaptable to different contexts by swapping retrieval databases.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-red-700">Downsides</h4>
+                            <ul class="pro-con-list con-list text-slate-600 mt-1 space-y-1">
+                                <li>Prone to hallucinations as the core model is not trained on the specific domain data.</li>
+                                <li>Can behave like a rigid, sequential workflow rather than demonstrating deep understanding.</li>
+                                <li>Output may lack variety due to reliance on retrieved examples.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Idea 2 Section -->
+        <section id="idea2" class="mb-16 scroll-mt-24">
+            <div class="mb-8">
+                <span class="text-sm font-bold uppercase text-sky-600">Architecture 2</span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Single Agent (Fine-Tuned)</h2>
+            </div>
+            
+            <p class="text-lg text-slate-600 max-w-3xl mb-8">
+                This architecture involves comprehensively fine-tuning a single AI model on all available information: SKUs, feature catalogs, and sample test cases. The model is expected to generate a list of test cases from its inherent, integrated knowledge.
+            </p>
+
+            <div class="grid md:grid-cols-5 gap-8">
+                <div class="md:col-span-3">
+                    <h3 class="text-xl font-semibold text-slate-900 mb-4">Workflow Diagram</h3>
+                    <div class="bg-slate-100 p-6 rounded-lg border border-slate-200 space-y-4">
+                        <div class="diagram-box">SKUs, Catalogs, Samples</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box font-semibold text-sky-700 bg-sky-50 border-sky-200">Fine-Tuning Process</div>
+                         <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box">Trained AI Model</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="diagram-box">User Prompt</div>
+                            <div class="diagram-box">Generated Test Cases</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold text-slate-900 mb-4">Analysis</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-green-700">Upsides</h4>
+                            <ul class="pro-con-list pro-list text-slate-600 mt-1 space-y-1">
+                                <li>High potential for sophisticated and nuanced output due to deep learning.</li>
+                                <li>High ceiling for quality, relevance, and variety in test cases.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-red-700">Downsides</h4>
+                            <ul class="pro-con-list con-list text-slate-600 mt-1 space-y-1">
+                                <li>Significant data formatting challenges to prepare data for fine-tuning.</li>
+                                <li>High retraining overhead; any change to product data requires retraining the model.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Idea 3 Section -->
+        <section id="idea3" class="mb-16 scroll-mt-24">
+            <div class="mb-8">
+                <span class="text-sm font-bold uppercase text-sky-600">Architecture 3</span>
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Multi-Agent System</h2>
+            </div>
+            
+            <p class="text-lg text-slate-600 max-w-3xl mb-8">
+                This advanced architecture divides the task between two specialized AI agents: a Context Agent that understands the product domain, and a Writing Agent that is an expert in test case syntax. This separation of concerns aims to optimize the quality and accuracy of the final output.
+            </p>
+
+            <div class="grid md:grid-cols-5 gap-8">
+                <div class="md:col-span-3">
+                    <h3 class="text-xl font-semibold text-slate-900 mb-4">Workflow Diagram</h3>
+                    <div class="bg-slate-100 p-6 rounded-lg border border-slate-200 space-y-4">
+                         <div class="diagram-box">User Prompt</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box font-semibold text-sky-700 bg-sky-50 border-sky-200">Context Agent (Product Expert)</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box">List of Test Case Ideas (Natural Language)</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box font-semibold text-violet-700 bg-violet-50 border-violet-200">Writing Agent (Syntax Expert)</div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box">Validated Test Cases</div>
+                    </div>
+                </div>
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold text-slate-900 mb-4">Analysis</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-green-700">Upsides</h4>
+                            <ul class="pro-con-list pro-list text-slate-600 mt-1 space-y-1">
+                                <li>Specialization of tasks can lead to higher quality and more accurate outputs.</li>
+                                <li>More modular; the Writing Agent can be reused, while only the Context Agent needs updating.</li>
+                                <li>Potentially the highest quality ceiling with orchestration.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-red-700">Downsides</h4>
+                            <ul class="pro-con-list con-list text-slate-600 mt-1 space-y-1">
+                                <li>Increased complexity in system design and orchestration between agents.</li>
+                                <li>Requires careful management of the data flow and communication protocol.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Comparison Section -->
+        <section id="comparison" class="mb-16 scroll-mt-24">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900">Architecture Comparison</h2>
+                <p class="mt-2 text-lg text-slate-600 max-w-2xl mx-auto">
+                    A visual summary of the trade-offs between the three proposed architectures. Hover over the points on the chart for more details. Higher scores are generally better.
+                </p>
+            </div>
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </section>
+        
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm">
+            <p>&copy; 2025 AI Architecture Analysis. This is a conceptual application.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chart.js Radar Chart for Comparison
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            const data = {
+                labels: [
+                    'Implementation Ease', 
+                    'Output Quality Potential', 
+                    'Maintenance Overhead', 
+                    'Adaptability', 
+                    'Cost to Build'
+                ],
+                datasets: [
+                    {
+                        label: 'Idea 1: Tool-Based',
+                        data: [8, 5, 8, 9, 7],
+                        fill: true,
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)', // sky-400
+                        borderColor: 'rgb(56, 189, 248)',
+                        pointBackgroundColor: 'rgb(56, 189, 248)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(56, 189, 248)'
+                    },
+                    {
+                        label: 'Idea 2: Fine-Tuned',
+                        data: [3, 9, 3, 2, 4],
+                        fill: true,
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)', // red-500
+                        borderColor: 'rgb(239, 68, 68)',
+                        pointBackgroundColor: 'rgb(239, 68, 68)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(239, 68, 68)'
+                    },
+                    {
+                        label: 'Idea 3: Multi-Agent',
+                        data: [5, 10, 6, 6, 5],
+                        fill: true,
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)', // violet-500
+                        borderColor: 'rgb(139, 92, 246)',
+                        pointBackgroundColor: 'rgb(139, 92, 246)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(139, 92, 246)'
+                    }
+                ]
+            };
+
+            const config = {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Architecture Trade-Offs (Scores 1-10)',
+                            font: { size: 16 },
+                            color: '#334155' // slate-700
+                        },
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: '#e2e8f0' // slate-200
+                            },
+                            grid: {
+                                color: '#e2e8f0' // slate-200
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                },
+                                color: '#475569' // slate-600
+                            },
+                            ticks: {
+                                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                                stepSize: 2
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    }
+                }
+            };
+
+            new Chart(ctx, config);
+
+            // Navigation Active State on Scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const headerHeight = document.getElementById('header').offsetHeight;
+
+            const onScroll = () => {
+                const scrollPos = window.scrollY + headerHeight + 20; // Add offset
+                let currentSection = '';
+
+                sections.forEach(section => {
+                    if (section.offsetTop <= scrollPos && (section.offsetTop + section.offsetHeight) > scrollPos) {
+                        currentSection = section.id;
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${currentSection}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            window.addEventListener('scroll', onScroll);
+        });
+    </script>
+</body>
+</html>
